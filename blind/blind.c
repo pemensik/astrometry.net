@@ -961,7 +961,7 @@ static void solve_fields(blind_t* bp, sip_t* verify_wcs) {
         memset(&template, 0, sizeof(MatchObj));
         template.fieldnum = fieldnum;
         template.fieldfile = bp->fieldid;
-/**
+#if 0 //# Modified by Robert Lancaster for the SexySolver Internal Library
         // Get the FIELDID string from the xyls FITS header.
         if (xylist_open_field(bp->xyls, fieldnum)) {
             logerr("Failed to open extension %i in xylist.\n", fieldnum);
@@ -974,17 +974,17 @@ static void solve_fields(blind_t* bp, sip_t* verify_wcs) {
                 strncpy(template.fieldname, idstr, sizeof(template.fieldname) - 1);
             free(idstr);
         }
-
+#endif
         // Has the field already been solved?
         if (is_field_solved(bp, fieldnum))
-            goto cleanup;
+           return; //# Modified by Robert Lancaster for the SexySolver Internal Library
 
         // Get the field.
-        solver_set_field(sp, xylist_read_field(bp->xyls, NULL));
-        **/
+        //solver_set_field(sp, xylist_read_field(bp->xyls, NULL));   //# Modified by Robert Lancaster for the SexySolver Internal Library
+
         if (!sp->fieldxy) {
             logerr("Failed to read xylist field.\n");
-            goto cleanup;
+            return; //# Modified by Robert Lancaster for the SexySolver Internal Library
         }
 
         sp->numtries = 0;
@@ -1058,7 +1058,7 @@ static void solve_fields(blind_t* bp, sip_t* verify_wcs) {
             }
         }
 
-        solver_free_field(sp);
+        //solver_free_field(sp); //# Modified by Robert Lancaster for the SexySolver Internal Library
 
         get_resource_stats(&utime, &stime, NULL);
         gettimeofday(&wtime, NULL);
