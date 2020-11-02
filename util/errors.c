@@ -94,6 +94,7 @@ err_t* errors_get_state() {
         err_t* e = error_new();
         e->print = stderr;
         pl_append(estack, e);
+        free(e);
     }
     return pl_get(estack, pl_size(estack)-1);
 }
@@ -119,6 +120,7 @@ void errors_push_state() {
     snapshot = error_copy(now);
     pl_push(estack, snapshot);
     pl_push(estack, now);
+    free(snapshot);
 }
 
 void errors_pop_state() {

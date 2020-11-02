@@ -1627,7 +1627,7 @@ double verify_star_lists_ror(double* refxys, int NR,
     verify_t v;
     double* eodds = NULL;
     int* etheta = NULL;
-    int ibailed, istopped;
+    int ibailed = 0, istopped = 0;
     int besti = -1;
     int* theta = NULL;
     double* allodds = NULL;
