@@ -74,7 +74,10 @@ int scamp_catalog_write_field_header(scamp_cat_t* scamp, const qfits_header* hdr
             return -1;
         }
     if (freehdr)
+    {
         qfits_header_destroy(freehdr);
+        freehdr = NULL;
+    }
     if (fitstable_write_row(scamp->table, hdrstring)) {
         ERROR("Failed to write scamp catalog field header");
         return -1;
