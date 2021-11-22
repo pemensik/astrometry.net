@@ -342,8 +342,8 @@ LDLIBS_DEF := $(LDLIBS)
 # Provide for executable programs and FITS headers 
 # GIT fields: revision, date and url via CFLAGS.
 # These fields replace the deprecated SVN fields.
-AN_GIT_REVISION ?= $(shell git describe)
-AN_GIT_DATE ?= $(shell git log -n 1 --format=%cd | sed 's/ /_/g')
+AN_GIT_REVISION := 0.76
+AN_GIT_DATE := Mon_Sep_3_15:20:15_2018_-0400
 AN_GIT_URL := https://github.com/dstndstn/astrometry.net
 
 CFLAGS_DEF += -DAN_GIT_REVISION='"$(AN_GIT_REVISION)"'
