@@ -141,6 +141,7 @@ void blind_set_corr_file(blind_t* bp, const char* fn);
 void blind_set_wcs_file(blind_t* bp, const char* fn);
 void blind_set_xcol(blind_t* bp, const char* x);
 void blind_set_ycol(blind_t* bp, const char* x);
+void blind_set_libmode(blind_t* bp, anbool islib);
 
 void blind_add_verify_wcs(blind_t* bp, sip_t* wcs);
 void blind_add_loaded_index(blind_t* bp, index_t* ind);

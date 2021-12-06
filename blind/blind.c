@@ -277,6 +277,11 @@ void blind_set_ycol(blind_t* bp, const char* y) {
     bp->ycolname = strdup_safe(y);
 }
 
+void blind_set_libmode(blind_t* bp, anbool islib) {
+    bp->libmode = islib;
+    bp->solver.libmode = islib;
+}
+
 void blind_add_index(blind_t* bp, const char* index) {
     sl_append(bp->indexnames, index);
 }
