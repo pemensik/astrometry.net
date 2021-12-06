@@ -105,6 +105,7 @@ int engine_autoindex_search_paths(engine_t* engine) {
             }
 
             logverb("Checking file \"%s\"\n", fullpath);
+            // FIXME: Is this ever needed on? err seems ignored. Should just ignore instead?
             //errors_start_logging_to_string();
             ok = index_is_file_index(fullpath);
             //err = errors_stop_logging_to_string(": ");
@@ -526,9 +527,10 @@ int engine_run_job(engine_t* engine, job_t* job) {
             // we only want to try using the verify_wcses the first time.
             blind_clear_verify_wcses(bp);
             blind_clear_indexes(bp);
-            //# Modified by Robert Lancaster for the SexySolver Internal Library
-            //blind_clear_solutions(bp); //We will clean this up later.
-            //blind_clear_indexes(bp); //Repetitive?
+            if (!bp->libmode) {
+                blind_clear_solutions(bp);
+                blind_clear_indexes(bp); //Repetitive?
+            }
             solver_clear_indexes(sp);
 
             if (blind_is_run_obsolete(bp, sp)) {
@@ -546,9 +548,10 @@ int engine_run_job(engine_t* engine, job_t* job) {
     logverb("AB scale constraints: %i\n", sp->num_abscale_skipped);
 
  finish:
-    //# Modified by Robert Lancaster for the SexySolver Internal Library, we will clean these up back in SexySolvr.cpp
-    //solver_cleanup(sp);
-    //blind_cleanup(bp);
+    if (bp->libmode)
+      return 0;
+    solver_cleanup(sp);
+    blind_cleanup(bp);
     return 0;
 }
 

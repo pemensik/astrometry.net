@@ -204,6 +204,9 @@ struct solver_t {
 
     // Cached data about this field, for verify_hit().
     verify_field_t* vf;
+
+    // StellarSolver library mode
+    anbool   libmode;
 };
 typedef struct solver_t solver_t;
 

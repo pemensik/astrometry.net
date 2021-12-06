@@ -1045,15 +1045,14 @@ static void solve_fields(blind_t* bp, sip_t* verify_wcs) {
             logerr(".\n");
             if (sp->have_best_match) {
                 logverb("Best match encountered: ");
-                if(log_get_level()>LOG_ERROR) //# Modified by Robert Lancaster for the StellarSolver Internal Library
+                if(!bp->libmode || log_get_level()>LOG_ERROR)
                     matchobj_print(&(sp->best_match), log_get_level());
             } else {
                 logverb("Best odds encountered: %g\n", exp(sp->best_logodds));
             }
         }
 
-        if (!bp->libmode)
-            solver_free_field(sp);
+        solver_free_field(sp);
 
         get_resource_stats(&utime, &stime, NULL);
         gettimeofday(&wtime, NULL);

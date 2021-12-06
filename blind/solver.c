@@ -643,10 +643,11 @@ void solver_preprocess_field(solver_t* solver) {
 }
 
 void solver_free_field(solver_t* solver) {
-    //# Modified by Robert Lancaster for the SexySolver Internal Library
-    //if (solver->fieldxy)
-    //    starxy_free(solver->fieldxy);
-    //solver->fieldxy = NULL;
+    if (!solver->libmode) {
+        if (solver->fieldxy)
+            starxy_free(solver->fieldxy);
+        solver->fieldxy = NULL;
+    }
     if (solver->vf)
         verify_field_free(solver->vf);
     solver->vf = NULL;
@@ -1391,7 +1392,7 @@ static int solver_handle_hit(solver_t* sp, MatchObj* mo, sip_t* sip,
     update_timeused(sp);
     mo->timeused = sp->timeused;
 
-    if(log_get_level()>LOG_ERROR) //# Modified by Robert Lancaster for the StellarSolver Internal Library
+    if(!sp->libmode || log_get_level()>LOG_ERROR)
         matchobj_print(mo, log_get_level());
 
     if (mo->logodds < sp->logratio_tokeep)
