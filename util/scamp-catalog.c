@@ -71,6 +71,7 @@ int scamp_catalog_write_field_header(scamp_cat_t* scamp, const qfits_header* hdr
     for (i=0; i<N; i++)
         if (qfits_header_write_line(hdr, i, hdrstring + i * FITS_LINESZ)) {
             ERROR("Failed to get scamp catalog field header line %i", i);
+            free(hdrstring);
             return -1;
         }
     if (freehdr)
@@ -78,11 +79,12 @@ int scamp_catalog_write_field_header(scamp_cat_t* scamp, const qfits_header* hdr
         qfits_header_destroy(freehdr);
         freehdr = NULL;
     }
-    if (fitstable_write_row(scamp->table, hdrstring)) {
+    i = fitstable_write_row(scamp->table, hdrstring);
+    free(hdrstring);
+    if (i) {
         ERROR("Failed to write scamp catalog field header");
         return -1;
     }
-    free(hdrstring);
 
     if (fitstable_pad_with(scamp->table, ' ') ||
         fitstable_fix_header(scamp->table)) {
