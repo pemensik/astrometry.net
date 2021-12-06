@@ -24,15 +24,11 @@
 #include <dirent.h>
 #include <time.h>
 
-#ifdef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
-#include <winsock2.h>
-#else
 #include <sys/wait.h>
 #include <sys/resource.h>
 #include <sys/select.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#endif
 
 #include "os-features.h"
 #include "ioutils.h"
@@ -227,8 +223,8 @@ char* find_file_in_dirs(const char** dirs, int ndirs, const char* filename, anbo
     }
     return NULL;
 }
-#ifndef __win32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
 float get_cpu_usage() {
+#ifndef __win32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
     struct rusage r;
     float sofar;
     if (getrusage(RUSAGE_SELF, &r)) {
@@ -238,8 +234,10 @@ float get_cpu_usage() {
     sofar = (float)(r.ru_utime.tv_sec + r.ru_stime.tv_sec) +
         (1e-6 * (r.ru_utime.tv_usec + r.ru_stime.tv_usec));
     return sofar;
-}
+#else
+    return -1.0;
 #endif
+}
 
 anbool streq(const char* s1, const char* s2) {
     if (s1 == NULL || s2 == NULL)
@@ -290,7 +288,6 @@ void asprintf_safe(char** strp, const char* format, ...) {
     }
     va_end(lst);
 }
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
 sl* dir_get_contents(const char* path, sl* list, anbool filesonly, anbool recurse) {
     DIR* dir = opendir(path);
     if (!dir) {
@@ -305,6 +302,7 @@ sl* dir_get_contents(const char* path, sl* list, anbool filesonly, anbool recurs
         char* name;
         char* fullpath;
         anbool freeit = FALSE;
+        anbool isdir;
         errno = 0;
         de = readdir(dir);
         if (!de) {
@@ -316,24 +314,21 @@ sl* dir_get_contents(const char* path, sl* list, anbool filesonly, anbool recurs
         if (!strcmp(name, ".") || !strcmp(name, ".."))
             continue;
         asprintf_safe(&fullpath, "%s/%s", path, name);
-        if (stat(fullpath, &st)) {
-            fprintf(stderr, "Failed to stat file %s: %s\n", fullpath, strerror(errno));
-            // this can happen when files are deleted, eg
+	if (!file_exists(fullpath)) {
+            fprintf(stderr, "Failed to stat file %s\n", fullpath);
             continue;
-            //closedir(dir);
-            //sl_free2(list);
-            //return NULL;
         }
 
+	isdir = path_is_dir(fullpath);
         if (filesonly) {
-            if (S_ISREG(st.st_mode) || S_ISLNK(st.st_mode))
+            if (!isdir)
                 sl_append_nocopy(list, fullpath);
             else
                 freeit = TRUE;
         } else {
             sl_append_nocopy(list, fullpath);
         }
-        if (recurse && S_ISDIR(st.st_mode)) {
+        if (recurse && isdir) {
             dir_get_contents(path, list, filesonly, recurse);
         }
         if (freeit)
@@ -342,7 +337,6 @@ sl* dir_get_contents(const char* path, sl* list, anbool filesonly, anbool recurs
     closedir(dir);
     return list;
 }
-#endif
 
 static int readfd(int fd, char* buf, int NB, char** pcursor,
                   sl* lines, anbool* pdone) {
@@ -399,10 +393,8 @@ static int readfd(int fd, char* buf, int NB, char** pcursor,
     *pcursor = cursor;
     return 0;
 }
-//# Modified by Robert Lancaster for the SexySolver Internal Library
-//Removing this function since it won't be needed and will cause problems on windows
-/**
 int run_command_get_outputs(const char* cmd, sl** outlines, sl** errlines) {
+#ifndef WIN32
     int outpipe[2];
     int errpipe[2];
     pid_t pid;
@@ -593,8 +585,12 @@ int run_command_get_outputs(const char* cmd, sl** outlines, sl** errlines) {
     }
     
     return 0;
+#else
+    SYSERROR("run_command_get_outputs NOT SUPPORTED.");
+    return -1;
+#endif
 }
-**/
+
 int mkdir_p(const char* dirpath) {
     sl* tomake = sl_new(4);
     char* path = strdup(dirpath);
@@ -675,7 +671,6 @@ char* create_temp_file(const char* fn, const char* dir) {
     return tempfile;
 }
 
-/** //# Modified by Robert Lancaster for the SexySolver Internal Library
 char* create_temp_dir(const char* name, const char* dir) {
     char* tempdir;
     if (!dir) {
@@ -684,7 +679,7 @@ char* create_temp_dir(const char* name, const char* dir) {
     asprintf_safe(&tempdir, "%s/tmp.%s.XXXXXX", dir, name);
     // no mkdtemp() in some versions of Solaris;
     // https://groups.google.com/forum/#!topic/astrometry/quGEbY1CgR8
-#if defined(__sun)
+#if defined(__sun) || defined(WIN32)
     mktemp(tempdir);
     if (!mkdir(tempdir, 0700)) {
         SYSERROR("Failed to create temp dir");
@@ -698,7 +693,6 @@ char* create_temp_dir(const char* name, const char* dir) {
 #endif
     return tempdir;
 }
-**/
 
 sl* file_get_lines(const char* fn, anbool include_newlines) {
     FILE* fid;
@@ -821,7 +815,6 @@ time_t file_get_last_modified_time(const char* fn) {
     }
     return st.st_mtime;
 }
-/** //# Modified by Robert Lancaster for the SexySolver Internal Library
 int file_get_last_modified_string(const char* fn, const char* timeformat,
                                   anbool utc, char* output, size_t outsize) {
     struct tm tym;
@@ -845,7 +838,7 @@ int file_get_last_modified_string(const char* fn, const char* timeformat,
     strftime(output, outsize, timeformat, &tym);
     return 0;
 }
-**/
+
 anbool file_exists(const char* fn) {
     return fn && (access(fn, F_OK) == 0);
 }
@@ -896,7 +889,7 @@ char* strdup_safe(const char* str) {
     return rtn;
 }
 
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
+#ifndef WIN32 //# Modified by Robert Lancaster for the SexySolver Internal Library
 static int oldsigbus_valid = 0;
 static struct sigaction oldsigbus;
 static void sigbus_handler(int sig) {

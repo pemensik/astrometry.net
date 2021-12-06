@@ -312,21 +312,19 @@ static void check_time_limits(blind_t* bp) {
             bp->hit_timelimit = TRUE;
         }
     }
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
     if (bp->total_cpulimit || bp->cpulimit) {
         float now = get_cpu_usage();
-        if ((bp->total_cpulimit > 0.0) &&
+        if (now >= 0.0 && bp->total_cpulimit > 0.0 &&
             (now - bp->cpu_total_start > bp->total_cpulimit)) {
             logmsg("Total CPU time limit reached!\n");
             bp->hit_total_cpulimit = TRUE;
         }
-        if ((bp->cpulimit > 0.0) &&
+        if (now >= 0.0 && bp->cpulimit > 0.0 &&
             (now - bp->cpu_start > bp->cpulimit)) {
             logmsg("CPU time limit reached!\n");
             bp->hit_cpulimit = TRUE;
         }
     }
-#endif
     if (bp->hit_total_timelimit ||
         bp->hit_total_cpulimit ||
         bp->hit_timelimit ||
@@ -343,9 +341,7 @@ void blind_run(blind_t* bp) {
     bp->time_total_start = timenow();
 
     // Record current CPU usage for total cpu-usage limit.
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
     bp->cpu_total_start = get_cpu_usage();
-#endif
 
     //# Modified by Robert Lancaster for the SexySolver Internal Library
     /**
@@ -456,9 +452,7 @@ void blind_run(blind_t* bp) {
         }
 
         // Record current CPU usage.
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
         bp->cpu_start = get_cpu_usage();
-#endif
         // Record current wall-clock time.
         bp->time_start = time(NULL);
 
@@ -490,9 +484,7 @@ void blind_run(blind_t* bp) {
             logverb("Trying index %s...\n", index->indexname);
 
             // Record current CPU usage.
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
             bp->cpu_start = get_cpu_usage();
-#endif
             // Record current wall-clock time.
             bp->time_start = time(NULL);
 
@@ -715,6 +707,7 @@ void blind_cleanup(blind_t* bp) {
 }
 
 #ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
+// FIXME: why is this skipped on WIN32?
 static int sort_rdls(MatchObj* mymo, blind_t* bp) {
     const solver_t* sp = &(bp->solver);
     anbool asc = TRUE;
@@ -794,13 +787,11 @@ static anbool record_match_callback(MatchObj* mo, void* userdata) {
 
         // This must happen first, because it reorders the "ref" arrays,
         // and we want that to be done before more data are integrated.
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
         if (bp->sort_rdls) {
             if (sort_rdls(mymo, bp)) {
                 ERROR("Failed to sort RDLS file by column \"%s\"", bp->sort_rdls);
             }
         }
-#endif
 
         logdebug("Converting %i reference stars from xyz to radec\n", mymo->nindex);
         mymo->refradec = malloc(mymo->nindex * 2 * sizeof(double));
