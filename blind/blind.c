@@ -344,27 +344,27 @@ void blind_run(blind_t* bp) {
     bp->cpu_total_start = get_cpu_usage();
 
     //# Modified by Robert Lancaster for the SexySolver Internal Library
-    /**
-    get_fields_from_solvedserver(bp, sp);
+    if (!bp->libmode) {
+        get_fields_from_solvedserver(bp, sp);
 
-    // Parse WCS files submitted for verification.
-    load_and_parse_wcsfiles(bp);
+        // Parse WCS files submitted for verification.
+        load_and_parse_wcsfiles(bp);
 
-    // Read .xyls file...
-    logverb("Reading fields file %s...", bp->fieldfname);
-    bp->xyls = xylist_open(bp->fieldfname);
-    if (!bp->xyls) {
-        ERROR("Failed to read xylist.\n");
-        exit( -1);
+        // Read .xyls file...
+        logverb("Reading fields file %s...", bp->fieldfname);
+        bp->xyls = xylist_open(bp->fieldfname);
+        if (!bp->xyls) {
+            ERROR("Failed to read xylist.\n");
+            exit( -1);
+        }
+        xylist_set_xname(bp->xyls, bp->xcolname);
+        xylist_set_yname(bp->xyls, bp->ycolname);
+        xylist_set_include_flux(bp->xyls, FALSE);
+        xylist_set_include_background(bp->xyls, FALSE);
+        logverb("found %u fields.\n", xylist_n_fields(bp->xyls));
+
+        remove_invalid_fields(bp->fieldlist, xylist_n_fields(bp->xyls));
     }
-    xylist_set_xname(bp->xyls, bp->xcolname);
-    xylist_set_yname(bp->xyls, bp->ycolname);
-    xylist_set_include_flux(bp->xyls, FALSE);
-    xylist_set_include_background(bp->xyls, FALSE);
-    logverb("found %u fields.\n", xylist_n_fields(bp->xyls));
-
-    remove_invalid_fields(bp->fieldlist, xylist_n_fields(bp->xyls));
-   **/
 
     Nindexes = n_indexes(bp);
 
@@ -499,7 +499,8 @@ void blind_run(blind_t* bp) {
 
  cleanup:
     // Clean up.
-    //xylist_close(bp->xyls); //# Modified by Robert Lancaster for the SexySolver Internal Library
+    if (!bp->libmode)
+        xylist_close(bp->xyls);
 
     if (bp->solvedserver)
         solvedclient_set_server(NULL);
@@ -952,30 +953,31 @@ static void solve_fields(blind_t* bp, sip_t* verify_wcs) {
         memset(&template, 0, sizeof(MatchObj));
         template.fieldnum = fieldnum;
         template.fieldfile = bp->fieldid;
-#if 0 //# Modified by Robert Lancaster for the SexySolver Internal Library
-        // Get the FIELDID string from the xyls FITS header.
-        if (xylist_open_field(bp->xyls, fieldnum)) {
-            logerr("Failed to open extension %i in xylist.\n", fieldnum);
-            goto cleanup;
+        if (!bp->libmode) {
+             // Get the FIELDID string from the xyls FITS header.
+             if (xylist_open_field(bp->xyls, fieldnum)) {
+                 logerr("Failed to open extension %i in xylist.\n", fieldnum);
+                 goto cleanup;
+             }
+             fieldhdr = xylist_get_header(bp->xyls);
+             if (fieldhdr) {
+                 char* idstr = fits_get_dupstring(fieldhdr, bp->fieldid_key);
+                 if (idstr)
+                     strncpy(template.fieldname, idstr, sizeof(template.fieldname) - 1);
+                 free(idstr);
+             }
         }
-        fieldhdr = xylist_get_header(bp->xyls);
-        if (fieldhdr) {
-            char* idstr = fits_get_dupstring(fieldhdr, bp->fieldid_key);
-            if (idstr)
-                strncpy(template.fieldname, idstr, sizeof(template.fieldname) - 1);
-            free(idstr);
-        }
-#endif
         // Has the field already been solved?
         if (is_field_solved(bp, fieldnum))
-           return; //# Modified by Robert Lancaster for the SexySolver Internal Library
+           goto cleanup;
 
         // Get the field.
-        //solver_set_field(sp, xylist_read_field(bp->xyls, NULL));   //# Modified by Robert Lancaster for the SexySolver Internal Library
+        if (!bp->libmode)
+             solver_set_field(sp, xylist_read_field(bp->xyls, NULL));
 
         if (!sp->fieldxy) {
             logerr("Failed to read xylist field.\n");
-            return; //# Modified by Robert Lancaster for the SexySolver Internal Library
+            goto cleanup;
         }
 
         sp->numtries = 0;
@@ -1050,7 +1052,8 @@ static void solve_fields(blind_t* bp, sip_t* verify_wcs) {
             }
         }
 
-        solver_free_field(sp);
+        if (!bp->libmode)
+            solver_free_field(sp);
 
         get_resource_stats(&utime, &stime, NULL);
         gettimeofday(&wtime, NULL);
@@ -1062,10 +1065,9 @@ static void solve_fields(blind_t* bp, sip_t* verify_wcs) {
         last_utime = utime;
         last_stime = stime;
         last_wtime = wtime;
-    return;  //# Modified by Robert Lancaster for the SexySolver Internal Library
-        //We want to return here so that the sp object is preserved so we don't have to read the information from a wcs file
     cleanup:
-        solver_cleanup_field(sp);
+        if (!bp->libmode)
+            solver_cleanup_field(sp);
     }
 }
 

@@ -125,6 +125,7 @@ struct blind_params {
     anbool cancelled;
 
     anbool best_hit_only;
+    anbool libmode;
 };
 typedef struct blind_params blind_t;
 
