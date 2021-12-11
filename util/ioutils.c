@@ -224,7 +224,6 @@ char* find_file_in_dirs(const char** dirs, int ndirs, const char* filename, anbo
     return NULL;
 }
 float get_cpu_usage() {
-#ifndef WIN32 //# Modified by Robert Lancaster for the SexySolver Internal Library
     struct rusage r;
     float sofar;
     if (getrusage(RUSAGE_SELF, &r)) {
@@ -234,9 +233,6 @@ float get_cpu_usage() {
     sofar = (float)(r.ru_utime.tv_sec + r.ru_stime.tv_sec) +
         (1e-6 * (r.ru_utime.tv_usec + r.ru_stime.tv_usec));
     return sofar;
-#else
-    return -1.0;
-#endif
 }
 
 anbool streq(const char* s1, const char* s2) {

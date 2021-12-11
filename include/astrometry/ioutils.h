@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <sys/types.h>
-//# Modified by Robert Lancaster for the SexySolver Internal Library
 #include <time.h>
 
 #include "astrometry/an-bool.h"
