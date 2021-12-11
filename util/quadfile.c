@@ -285,7 +285,7 @@ int quadfile_write_quad(quadfile_t* qf, unsigned int* stars) {
     int i;
     fitsbin_chunk_t* chunk = quads_chunk(qf);
 
-    if (sizeof(uint32_t) == sizeof(uint)) {
+    if (sizeof(uint32_t) == sizeof(unsigned)) {
         data = stars;
     } else {
         data = ustars;

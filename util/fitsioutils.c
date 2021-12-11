@@ -1046,7 +1046,7 @@ static void fits_init_endian_string() {
         uint32_t endian = ENDIAN_DETECTOR;
         unsigned char* cptr = (unsigned char*)&endian;
         fits_endian_string_inited = 1;
-        sprintf(fits_endian_string, "%02x:%02x:%02x:%02x", (uint)cptr[0], (uint)cptr[1], (uint)cptr[2], (uint)cptr[3]);
+        sprintf(fits_endian_string, "%02x:%02x:%02x:%02x", (unsigned)cptr[0], (unsigned)cptr[1], (unsigned)cptr[2], (unsigned)cptr[3]);
     }
 }
 
@@ -1170,7 +1170,7 @@ int fits_find_column(const qfits_table* table, const char* colname) {
 }
 
 void fits_add_uint_size(qfits_header* header) {
-    fits_header_add_int(header, "UINT_SZ", sizeof(uint), "sizeof(uint)");
+    fits_header_add_int(header, "UINT_SZ", sizeof(unsigned), "sizeof(usigned)");
 }
 
 void fits_add_double_size(qfits_header* header) {
@@ -1180,9 +1180,9 @@ void fits_add_double_size(qfits_header* header) {
 int fits_check_uint_size(const qfits_header* header) {
     int uintsz;
     uintsz = qfits_header_getint(header, "UINT_SZ", -1);
-    if (sizeof(uint) != uintsz) {
-        fprintf(stderr, "File was written with sizeof(uint)=%i, but currently sizeof(uint)=%u.\n",
-                uintsz, (uint)sizeof(uint));
+    if (sizeof(unsigned) != uintsz) {
+        fprintf(stderr, "File was written with sizeof(unsigned)=%i, but currently sizeof(unsigned)=%u.\n",
+                uintsz, (unsigned)sizeof(unsigned));
         return -1;
     }
     return 0;
@@ -1193,7 +1193,7 @@ int fits_check_double_size(const qfits_header* header) {
     doublesz = qfits_header_getint(header, "DUBL_SZ", -1);
     if (sizeof(double) != doublesz) {
         fprintf(stderr, "File was written with sizeof(double)=%i, but currently sizeof(double)=%u.\n",
-                doublesz, (uint)sizeof(double));
+                doublesz, (unsigned)sizeof(double));
         return -1;
     }
     return 0;
