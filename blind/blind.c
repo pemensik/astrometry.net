@@ -12,9 +12,6 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
-#include <sys/resource.h>
-#endif
 #include <libgen.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -47,9 +44,6 @@
 #include "permutedsort.h"
 #include "bl-sort.h"
 
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
-#include <sys/resource.h>
-#endif
 
 static anbool record_match_callback(MatchObj* mo, void* userdata);
 static time_t timer_callback(void* user_data);
@@ -712,8 +706,6 @@ void blind_cleanup(blind_t* bp) {
     free(bp->sort_rdls);
 }
 
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
-// FIXME: why is this skipped on WIN32?
 static int sort_rdls(MatchObj* mymo, blind_t* bp) {
     const solver_t* sp = &(bp->solver);
     anbool asc = TRUE;
@@ -761,7 +753,6 @@ static int sort_rdls(MatchObj* mymo, blind_t* bp) {
     free(perm);
     return 0;
 }
-#endif
 
 static anbool record_match_callback(MatchObj* mo, void* userdata) {
     blind_t* bp = userdata;

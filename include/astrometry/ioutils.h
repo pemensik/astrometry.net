@@ -35,9 +35,7 @@ Malloc
 char* dirname_safe(const char* path);
 
 // Returns (system + user) CPU time, in seconds.
-#ifndef __WIN32__ //# Modified by Robert Lancaster for the SexySolver Internal Library
 float get_cpu_usage(void);
-#endif
 
 //int log_resource_usage(int loglevel);
 
